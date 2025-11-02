@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-🤖 AI Trading System - Main Entry Point
+🤖 AI Trading System - Backend Entry Point
 
 Sistema de trading avanzado con agentes IA autónomos.
-Combina análisis técnico, machine learning y optimización automática.
+Backend puro sin dependencias de frontend.
 
 Author: Luis (AI Trading System)
-Version: 1.0.0
+Version: 2.0.0
 """
 
 import asyncio
@@ -18,20 +18,13 @@ from pathlib import Path
 from typing import Optional
 
 from utils.config.settings import settings
-
-# Intentar importar logger avanzado, usar simple como fallback
-try:
-    from utils.logging.logger import setup_logging, trading_logger
-except ImportError:
-    print("⚠️ structlog no disponible, usando logger simple...")
-    from utils.logging.simple_logger import setup_logging, trading_logger
-from dashboard.streamlit_app.app import run_dashboard
+from utils.logging.logger import setup_logging, trading_logger
 from agents.trading_agent.agent import TradingAgent
 from data.feeds.market_data import MarketDataManager
 
 
 class AITradingSystem:
-    """Sistema principal de trading con agentes IA."""
+    """Sistema principal de trading con agentes IA - Backend Only."""
     
     def __init__(self):
         """Inicializar el sistema de trading."""
@@ -39,7 +32,6 @@ class AITradingSystem:
         self.market_data = MarketDataManager()
         self.trading_agent: Optional[TradingAgent] = None
         self.api_process = None
-        self.frontend_process = None
         self.is_running = False
         
     async def initialize(self):
@@ -73,64 +65,19 @@ class AITradingSystem:
         except Exception as e:
             trading_logger.logger.error(f"❌ Error iniciando API: {e}")
     
-    def start_frontend_server(self):
-        """Iniciar servidor React."""
-        try:
-            frontend_path = Path(__file__).parent / "frontend"
-            if frontend_path.exists():
-                trading_logger.logger.info("⚛️ Iniciando frontend React...")
-                
-                # Verificar si npm está disponible
-                try:
-                    subprocess.run(["npm", "--version"], check=True, capture_output=True)
-                    
-                    # Instalar dependencias si es necesario
-                    if not (frontend_path / "node_modules").exists():
-                        trading_logger.logger.info("📦 Instalando dependencias...")
-                        subprocess.run(["npm", "install"], cwd=frontend_path, check=True)
-                    
-                    # Iniciar servidor
-                    self.frontend_process = subprocess.Popen([
-                        "npm", "run", "dev"
-                    ], cwd=frontend_path)
-                    
-                    trading_logger.logger.info("✅ Frontend iniciado en http://localhost:3000")
-                except subprocess.CalledProcessError:
-                    trading_logger.logger.warning("⚠️ npm no disponible, saltando frontend React")
-            else:
-                trading_logger.logger.warning("⚠️ Directorio frontend no encontrado")
-        except Exception as e:
-            trading_logger.logger.error(f"❌ Error iniciando frontend: {e}")
-    
-    def start_streamlit_dashboard(self):
-        """Iniciar dashboard Streamlit."""
-        try:
-            trading_logger.logger.info("📊 Iniciando dashboard Streamlit...")
-            dashboard_path = Path(__file__).parent / "dashboard" / "streamlit_app" / "app.py"
-            
-            if dashboard_path.exists():
-                subprocess.Popen([
-                    sys.executable, "-m", "streamlit", "run",
-                    str(dashboard_path),
-                    "--server.port", str(settings.DASHBOARD_PORT),
-                    "--server.address", settings.DASHBOARD_HOST,
-                    "--server.headless", "true"
-                ])
-                trading_logger.logger.info(f"✅ Streamlit iniciado en http://{settings.DASHBOARD_HOST}:{settings.DASHBOARD_PORT}")
-        except Exception as e:
-            trading_logger.logger.error(f"❌ Error iniciando Streamlit: {e}")
+
     
     def show_access_urls(self):
         """Mostrar URLs de acceso."""
         print("\n" + "=" * 80)
-        print("🌐 URLS DE ACCESO")
+        print("🌐 URLS DE ACCESO - BACKEND API")
         print("=" * 80)
-        print(f"📊 Dashboard React:    http://localhost:3000")
         print(f"🚀 API FastAPI:        http://{settings.API_HOST}:{settings.API_PORT}")
         print(f"📈 API Docs:           http://{settings.API_HOST}:{settings.API_PORT}/docs")
-        print(f"📋 Dashboard Streamlit: http://{settings.DASHBOARD_HOST}:{settings.DASHBOARD_PORT}")
+        print(f"📋 API Redoc:          http://{settings.API_HOST}:{settings.API_PORT}/redoc")
         print("=" * 80)
         print("💡 Usa Ctrl+C para detener el sistema")
+        print("💡 Frontend React debe ejecutarse por separado")
         print("=" * 80 + "\n")
         
     async def run(self):
@@ -147,12 +94,9 @@ class AITradingSystem:
             else:
                 trading_logger.logger.warning("⚠️ Ejecutando en modo LIVE TRADING")
             
-            # Iniciar servidores web
+            # Iniciar servidor API
             self.start_api_server()
             time.sleep(2)  # Esperar a que inicie la API
-            
-            self.start_frontend_server()
-            self.start_streamlit_dashboard()
             
             # Mostrar URLs
             self.show_access_urls()
@@ -184,10 +128,6 @@ class AITradingSystem:
             self.api_process.terminate()
             self.api_process.wait()
         
-        if self.frontend_process:
-            self.frontend_process.terminate()
-            self.frontend_process.wait()
-        
         # Detener agente
         if self.trading_agent:
             await self.trading_agent.stop()
@@ -200,23 +140,25 @@ class AITradingSystem:
 def main():
     """Función principal."""
     print("=" * 80)
-    print("🤖 AI TRADING SYSTEM v1.0")
+    print("🤖 AI TRADING SYSTEM v2.0 - BACKEND")
     print("=" * 80)
-    print("Sistema de trading avanzado con agentes IA")
+    print("Sistema de trading avanzado con agentes IA - Backend API")
     print(f"Modo: {settings.TRADING_MODE.upper()}")
     print(f"Exchange: {settings.DEFAULT_EXCHANGE.upper()}")
     print(f"Símbolo: {settings.DEFAULT_SYMBOL}")
     print(f"Entorno: {settings.ENVIRONMENT.upper()}")
     print("=" * 80)
     print("Características:")
+    print("• API REST con FastAPI")
     print("• Análisis técnico automatizado")
     print("• Agentes IA autónomos")
     print("• Gestión de riesgo inteligente")
-    print("• Dashboard React + FastAPI")
     print("• Backtesting avanzado")
     print("• Optimización automática")
+    print("• WebSocket para datos en tiempo real")
     print("=" * 80)
     print("⚠️  ADVERTENCIA: Siempre usa paper trading primero")
+    print("⚠️  NOTA: Este es solo el backend. Frontend React por separado.")
     print("=" * 80)
     
     # Crear y ejecutar el sistema
