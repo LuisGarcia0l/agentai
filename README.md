@@ -1,155 +1,138 @@
-# 🤖 AI Trading System - Sistema de Trading con Agentes IA
+# 🚀 AI Trading System v2.0
 
-Un sistema de trading avanzado que combina análisis técnico, machine learning y agentes autónomos para optimizar estrategias de trading en tiempo real.
+Sistema de trading automatizado optimizado para **Mac M2 (Apple Silicon)** con arquitectura separada backend/frontend.
 
-## 🏗️ Arquitectura del Sistema
+## ✨ Características
 
-```
-ai-trading-system/
-├── 📊 data/                    # Capa de datos
-│   ├── feeds/                  # APIs de mercado (Binance, Yahoo Finance)
-│   ├── storage/               # Base de datos y cache
-│   └── processors/            # Procesamiento de datos
-├── 🧠 strategies/             # Estrategias de trading
-│   ├── technical/             # Análisis técnico (RSI, MACD, etc.)
-│   ├── ml_models/            # Modelos de Machine Learning
-│   └── signals/              # Generación de señales
-├── 🤖 agents/                # Agentes IA autónomos
-│   ├── research_agent/       # Investigación de estrategias
-│   ├── optimizer_agent/      # Optimización de parámetros
-│   ├── risk_agent/          # Gestión de riesgo
-│   └── trading_agent/       # Ejecución de trades
-├── 💼 execution/             # Ejecución de órdenes
-│   ├── brokers/             # Conexiones con exchanges
-│   ├── paper_trading/       # Trading simulado
-│   └── order_management/    # Gestión de órdenes
-├── 📈 backtesting/          # Simulación y pruebas
-│   ├── engine/              # Motor de backtesting
-│   ├── metrics/             # Métricas de rendimiento
-│   └── reports/             # Reportes de resultados
-├── 🛡️ risk_management/      # Gestión de riesgo
-│   ├── position_sizing/     # Tamaño de posiciones
-│   ├── stop_loss/          # Stop-loss dinámico
-│   └── portfolio/          # Gestión de portafolio
-├── 📱 dashboard/            # Interface y monitoreo
-│   ├── streamlit_app/      # Dashboard web
-│   ├── monitoring/         # Monitoreo en tiempo real
-│   └── alerts/            # Sistema de alertas
-└── 🔧 utils/               # Utilidades
-    ├── config/             # Configuración
-    ├── logging/           # Sistema de logs
-    └── helpers/           # Funciones auxiliares
-```
+- 🐍 **Backend**: Python + FastAPI (Puerto 8000)
+- ⚛️ **Frontend**: React + Vite (Puerto 3000)
+- 🍎 **Optimizado para Mac M2** (ARM64)
+- 🧪 **Binance Testnet** integrado
+- 🚫 **Sin dependencias de Telegram**
+- ⚡ **Rápido y minimalista**
+- 🔧 **Setup automático con un solo script**
 
-## 🚀 Características Principales
+## 🎯 Instalación Rápida
 
-### 🎯 Niveles de Autonomía
-1. **Semi-automático**: Genera señales, tú decides
-2. **Automatizado**: Ejecuta trades basado en reglas
-3. **Autónomo**: Agentes IA optimizan y aprenden del mercado
-
-### 🤖 Agentes IA Especializados
-- **ResearchAgent**: Descubre y prueba nuevas estrategias
-- **OptimizerAgent**: Optimiza parámetros automáticamente
-- **RiskAgent**: Evalúa y ajusta el riesgo dinámicamente
-- **TradingAgent**: Ejecuta operaciones validadas
-
-### 📊 Estrategias Soportadas
-- **Análisis Técnico**: RSI, MACD, Bollinger Bands, Medias Móviles
-- **Machine Learning**: Random Forest, LSTM, Transformers
-- **Estadísticas**: Cointegración, correlaciones, ARIMA
-- **Reinforcement Learning**: Agentes que aprenden a maximizar ganancias
-
-## 🛠️ Tecnologías Utilizadas
-
-- **Python 3.11+**: Lenguaje principal
-- **FastAPI**: API REST para servicios
-- **Streamlit**: Dashboard interactivo
-- **LangChain**: Orquestación de agentes IA
-- **Pandas/NumPy**: Análisis de datos
-- **Scikit-learn/PyTorch**: Machine Learning
-- **CCXT**: Conexión con múltiples exchanges
-- **Docker**: Containerización
-- **PostgreSQL**: Base de datos principal
-
-## 🚦 Instalación y Configuración
-
-### Prerrequisitos
-- Python 3.11+
-- Docker y Docker Compose
-- Cuenta en exchange (Binance recomendado)
-- API keys del exchange
-
-### Instalación Rápida
 ```bash
-# Clonar el repositorio
-git clone <repo-url>
-cd ai-trading-system
+# Clona el repositorio
+git clone https://github.com/LuisGarcia0l/agentai.git
+cd agentai
 
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tus API keys
-
-# Ejecutar con Docker
-docker-compose up -d
-
-# O ejecutar localmente
-python main.py
+# Ejecuta el setup automático (Mac M2)
+./setup_m2.sh
 ```
 
-## 📋 Plan de Desarrollo (8 Semanas)
+## 🚀 Uso
 
-### Semanas 1-2: Base del Sistema
-- ✅ Estructura del proyecto
-- ✅ APIs de datos (Binance, Yahoo Finance)
-- ✅ Estrategias técnicas básicas
-- ✅ Backtesting inicial
+```bash
+# Iniciar todo el sistema
+./start.sh
 
-### Semanas 3-4: Automatización
-- 🔄 Paper trading
-- 🔄 Gestión de riesgo
-- 🔄 Sistema de órdenes
-- 🔄 Dashboard básico
+# O por separado:
+./start.sh backend    # Solo backend
+./start.sh frontend   # Solo frontend
+./start.sh test       # Probar sistema
+./start.sh stop       # Parar servicios
+```
 
-### Semanas 5-6: Machine Learning
-- 🔄 Modelos predictivos
-- 🔄 Optimización de parámetros
-- 🔄 Validación cruzada
-- 🔄 Métricas avanzadas
+## 🔗 URLs
 
-### Semanas 7-8: Agentes IA
-- 🔄 Agentes especializados
-- 🔄 Comunicación entre agentes
-- 🔄 Aprendizaje automático
-- 🔄 Dashboard avanzado
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **Frontend**: http://localhost:3000
+- **Health Check**: http://localhost:8000/api/health
 
-## ⚠️ Advertencias Importantes
+## ⚙️ Configuración
 
-1. **Nunca operes en real sin paper trading extensivo**
-2. **Siempre usa stop-loss y gestión de riesgo**
-3. **Backtestea en diferentes condiciones de mercado**
-4. **Mantén logs detallados de todas las decisiones**
-5. **Empieza con cantidades pequeñas**
+Edita el archivo `.env`:
 
-## 📊 Métricas de Rendimiento
+```bash
+# Binance Testnet
+BINANCE_API_KEY=your_testnet_api_key_here
+BINANCE_SECRET_KEY=your_testnet_secret_key_here
+BINANCE_TESTNET=True
+```
 
-- **Sharpe Ratio**: Rendimiento ajustado por riesgo
-- **Max Drawdown**: Pérdida máxima desde el pico
-- **Win Rate**: Porcentaje de trades ganadores
-- **Profit Factor**: Ganancias/Pérdidas
-- **Calmar Ratio**: Rendimiento anual/Max Drawdown
+## 🧪 Testing
 
-## 🤝 Contribución
+```bash
+# Probar conectividad Binance Testnet
+python3 binance_testnet.py
 
-Este es un proyecto en desarrollo activo. Las contribuciones son bienvenidas.
+# Probar sistema completo
+python3 test_system.py
+```
+
+## 📁 Estructura
+
+```
+agentai/
+├── simple_backend.py      # Backend principal
+├── binance_testnet.py     # Integración Binance
+├── setup_m2.sh           # Setup automático
+├── start.sh              # Script de inicio
+├── test_system.py        # Tests del sistema
+├── .env                  # Configuración
+└── frontend/             # React frontend
+    ├── package.json      # Optimizado para M2
+    └── src/              # Código React
+```
+
+## 🔧 Requisitos
+
+- **macOS** (preferiblemente Apple Silicon)
+- **Python 3.8+**
+- **Node.js 18+**
+- **npm 9+**
+
+## 🎯 Características del Sistema
+
+### Backend (Python + FastAPI)
+- ✅ API REST completa
+- ✅ Documentación automática (Swagger)
+- ✅ CORS configurado para React
+- ✅ Endpoints de trading simulado
+- ✅ Integración Binance Testnet
+- ✅ Sin dependencias complejas
+
+### Frontend (React + Vite)
+- ✅ Interfaz moderna y responsiva
+- ✅ Optimizado para ARM64
+- ✅ Hot reload para desarrollo
+- ✅ TypeScript support
+- ✅ Tailwind CSS
+
+## 🚫 Lo que NO incluye
+
+- ❌ Bot de Telegram
+- ❌ Dependencias pesadas
+- ❌ Configuración compleja
+- ❌ Trading real (solo testnet)
+
+## 🔒 Seguridad
+
+- Solo usa **Binance Testnet**
+- No incluye claves reales
+- Entorno de desarrollo seguro
+- Sin acceso a fondos reales
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea tu rama: `git checkout -b feature/nueva-caracteristica`
+3. Commit: `git commit -m 'Añadir nueva característica'`
+4. Push: `git push origin feature/nueva-caracteristica`
+5. Abre un Pull Request
 
 ## 📄 Licencia
 
-MIT License - Ver archivo LICENSE para detalles.
+MIT License - ver [LICENSE](LICENSE)
+
+## ⚠️ Disclaimer
+
+**Solo para fines educativos y de desarrollo.** Este sistema usa Binance Testnet y no maneja fondos reales. El trading de criptomonedas conlleva riesgos. Úsalo bajo tu propia responsabilidad.
 
 ---
 
-**⚡ Construido con IA para el futuro del trading automatizado**
+**🍎 Optimizado para Mac M2 | 🚀 v2.0 | ⚡ Rápido y Simple**
