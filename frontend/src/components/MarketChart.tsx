@@ -1,43 +1,46 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { apiService } from '../services/api';
-import { useMarketDataStore } from '../store';
+import { TrendingUp } from 'lucide-react';
 
 interface MarketChartProps {
   symbol: string;
 }
 
 const MarketChart: React.FC<MarketChartProps> = ({ symbol }) => {
-  const { selectedTimeframe } = useMarketDataStore();
+  const [chartData, setChartData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: ohlcvData, isLoading, error } = useQuery({
-    queryKey: ['ohlcv', symbol, selectedTimeframe],
-    queryFn: () => apiService.getOHLCVData(symbol, selectedTimeframe, 100),
-    refetchInterval: 30000,
-  });
+  useEffect(() => {
+    // Simular datos de gráfico
+    const generateMockData = () => {
+      const data = [];
+      const basePrice = 45000;
+      for (let i = 0; i < 24; i++) {
+        data.push({
+          time: `${i}:00`,
+          price: basePrice + Math.random() * 2000 - 1000,
+          volume: Math.random() * 1000000
+        });
+      }
+      return data;
+    };
+
+    setTimeout(() => {
+      setChartData(generateMockData());
+      setIsLoading(false);
+    }, 1000);
+  }, [symbol]);
 
   if (isLoading) {
     return (
       <div className="h-64 flex items-center justify-center">
-        <div className="spinner w-8 h-8"></div>
+        <div className="text-center">
+          <TrendingUp className="w-8 h-8 text-gray-400 mx-auto mb-2 animate-pulse" />
+          <p className="text-sm text-gray-500">Cargando gráfico...</p>
+        </div>
       </div>
     );
   }
-
-  if (error) {
-    return (
-      <div className="h-64 flex items-center justify-center">
-        <p className="text-red-500">Error cargando datos del gráfico</p>
-      </div>
-    );
-  }
-
-  const chartData = ohlcvData?.data.map(candle => ({
-    timestamp: new Date(candle.timestamp).toLocaleTimeString(),
-    price: candle.close,
-    volume: candle.volume,
-  })) || [];
 
   return (
     <div className="h-64">
@@ -45,7 +48,7 @@ const MarketChart: React.FC<MarketChartProps> = ({ symbol }) => {
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
           <XAxis 
-            dataKey="timestamp" 
+            dataKey="time" 
             tick={{ fontSize: 12 }}
             interval="preserveStartEnd"
           />

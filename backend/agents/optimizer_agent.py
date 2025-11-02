@@ -8,7 +8,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional, Tuple
 import optuna
-from sklearn.metrics import sharpe_ratio
 import json
 
 from backend.agents.base_agent import BaseAgent, AgentTask
@@ -48,6 +47,32 @@ class OptimizerAgent(BaseAgent):
         await self.backtesting_service.initialize()
         
         self.logger.info("OptimizerAgent inicializado con servicios de backtesting y optimización")
+    
+    def calculate_sharpe_ratio(self, returns: pd.Series, risk_free_rate: float = 0.02) -> float:
+        """
+        Calcular el Sharpe ratio de una serie de retornos
+        
+        Args:
+            returns: Serie de retornos
+            risk_free_rate: Tasa libre de riesgo anual (default: 2%)
+            
+        Returns:
+            Sharpe ratio
+        """
+        if len(returns) == 0 or returns.std() == 0:
+            return 0.0
+            
+        # Convertir tasa libre de riesgo a diaria
+        daily_risk_free_rate = risk_free_rate / 252
+        
+        # Calcular exceso de retorno
+        excess_returns = returns - daily_risk_free_rate
+        
+        # Calcular Sharpe ratio
+        sharpe = excess_returns.mean() / returns.std()
+        
+        # Anualizar
+        return sharpe * np.sqrt(252)
     
     async def _process_task(self, task: AgentTask) -> Any:
         """Procesar tareas de optimización"""
@@ -847,8 +872,9 @@ class OptimizerAgent(BaseAgent):
         total_return = sum(profits)
         returns_std = np.std(profits) if len(profits) > 1 else 0
         
-        # Sharpe ratio simplificado
-        sharpe = total_return / returns_std if returns_std > 0 else 0
+        # Sharpe ratio usando función personalizada
+        returns_series = pd.Series(profits) if profits else pd.Series([])
+        sharpe = self.calculate_sharpe_ratio(returns_series)
         
         # Sortino ratio (usando solo desviación de pérdidas)
         negative_returns = [p for p in profits if p < 0]

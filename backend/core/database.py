@@ -76,7 +76,7 @@ class Trade(Base):
     commission = Column(Float, default=0.0)
     stop_loss = Column(Float, nullable=True)
     take_profit = Column(Float, nullable=True)
-    metadata = Column(JSON, default=dict)
+    trade_metadata = Column(JSON, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

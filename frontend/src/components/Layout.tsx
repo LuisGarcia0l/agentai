@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   BarChart3,
   Bot,
@@ -13,7 +12,6 @@ import {
   Shield,
   Bell
 } from 'lucide-react';
-import { useMarketDataStore, useDashboardStore } from '../store';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,8 +20,8 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { selectedSymbol } = useMarketDataStore();
-  const { isLiveMode } = useDashboardStore();
+  const selectedSymbol = 'BTCUSDT'; // Default symbol
+  const isLiveMode = true; // Default to live mode
 
   const navigation = [
     {
@@ -59,9 +57,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
-      <motion.div
-        initial={{ x: -300 }}
-        animate={{ x: 0 }}
+      <div
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}
@@ -73,10 +69,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900 dark:text-white">
-                AI Trading
+                AutoDev Studio
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Sistema Inteligente
+                Trading Autónomo
               </p>
             </div>
           </div>
@@ -159,7 +155,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             © 2025 AI Trading System
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">

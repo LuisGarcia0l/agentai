@@ -123,6 +123,11 @@ async def root():
         "agents_active": agent_manager.get_active_agents_count() if agent_manager else 0
     }
 
+@app.get("/health")
+async def health():
+    """Endpoint de salud simple"""
+    return {"status": "healthy", "service": "AutoDev Trading Studio"}
+
 @app.get("/api/health")
 async def health_check():
     """Verificación de salud detallada"""
