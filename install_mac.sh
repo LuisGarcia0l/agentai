@@ -4,7 +4,7 @@
 # 🚀 Script de Instalación para Mac - AI Trading System
 # ============================================================================
 
-echo "🤖 AI Trading System - Instalación para Mac"
+echo "🤖 AI Trading System - Instalación para Macr"
 echo "=============================================="
 
 # Colores para output
