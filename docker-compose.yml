@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # Aplicación principal
+  ai-trading-system:
+    build: .
+    container_name: ai-trading-system
+    ports:
+      - "8501:8501"  # Streamlit dashboard
+      - "8000:8000"  # FastAPI
+    environment:
+      - ENVIRONMENT=development
+      - TRADING_MODE=paper
+      - DEBUG=true
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: trading-postgres
+    environment:
+      POSTGRES_DB: trading_db
+      POSTGRES_USER: trading_user
+      POSTGRES_PASSWORD: trading_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+  # Redis para cache y real-time data
+  redis:
+    image: redis:7-alpine
+    container_name: trading-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - trading-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Prometheus para métricas
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: trading-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+  # Grafana para visualización
+  grafana:
+    image: grafana/grafana:latest
+    container_name: trading-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - trading-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Jupyter Notebook para análisis
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    container_name: trading-jupyter
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./:/home/jovyan/trading-system
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  trading-network:
+    driver: bridge
