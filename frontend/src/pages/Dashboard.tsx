@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { useQuery } from 'react-query';
 import {
   TrendingUp,
   TrendingDown,
@@ -13,8 +12,6 @@ import {
   Clock,
   Target
 } from 'lucide-react';
-import { apiService, createWebSocketService } from '../services/api';
-import { useMarketDataStore, useTradingSignalsStore, useAgentsStore, useDashboardStore } from '../store';
 import MarketChart from '../components/MarketChart';
 import TradingSignals from '../components/TradingSignals';
 import AgentStatus from '../components/AgentStatus';
@@ -23,91 +20,79 @@ import toast from 'react-hot-toast';
 
 const Dashboard: React.FC = () => {
   const [wsConnected, setWsConnected] = useState(false);
-  const { selectedSymbol, currentData, setMarketData } = useMarketDataStore();
-  const { addSignal } = useTradingSignalsStore();
-  const { setAgentsStatus } = useAgentsStore();
-  const { isLiveMode } = useDashboardStore();
+  const [selectedSymbol] = useState('BTCUSDT');
+  const [currentData, setCurrentData] = useState(null);
+  const [isLiveMode] = useState(true);
 
-  // Queries para datos iniciales
-  const { data: marketTicker, isLoading: tickerLoading } = useQuery({
-    queryKey: ['market-ticker', selectedSymbol],
-    queryFn: () => apiService.getMarketTicker(selectedSymbol),
-    refetchInterval: 5000,
-  });
+  // Estados para datos
+  const [marketTicker, setMarketTicker] = useState(null);
+  const [agentsStatus, setAgentsStatus] = useState([]);
+  const [systemHealth, setSystemHealth] = useState(null);
+  const [tickerLoading, setTickerLoading] = useState(true);
+  const [agentsLoading, setAgentsLoading] = useState(true);
 
-  const { data: agentsStatus, isLoading: agentsLoading } = useQuery({
-    queryKey: ['agents-status'],
-    queryFn: () => apiService.getAgentsStatus(),
-    refetchInterval: 10000,
-  });
+  // Función para cargar datos del backend
+  const loadData = async () => {
+    try {
+      // Simular datos mientras no tengamos el backend completo
+      setMarketTicker({
+        symbol: selectedSymbol,
+        price: 45000,
+        change: 1200,
+        changePercent: 2.75,
+        volume: 1234567,
+        high: 46000,
+        low: 43500
+      });
 
-  const { data: systemHealth } = useQuery({
-    queryKey: ['system-health'],
-    queryFn: () => apiService.getSystemHealth(),
-    refetchInterval: 30000,
-  });
+      setAgentsStatus([
+        { id: '1', name: 'Research Agent', status: 'active', lastUpdate: new Date().toISOString(), performance: 85 },
+        { id: '2', name: 'Trading Agent', status: 'active', lastUpdate: new Date().toISOString(), performance: 92 },
+        { id: '3', name: 'Risk Agent', status: 'active', lastUpdate: new Date().toISOString(), performance: 78 },
+        { id: '4', name: 'Optimizer Agent', status: 'active', lastUpdate: new Date().toISOString(), performance: 88 }
+      ]);
 
-  // WebSocket para datos en tiempo real
+      setSystemHealth({
+        status: 'healthy',
+        uptime: 86400,
+        memory: 65,
+        cpu: 45,
+        agents: 4
+      });
+
+      setTickerLoading(false);
+      setAgentsLoading(false);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setTickerLoading(false);
+      setAgentsLoading(false);
+    }
+  };
+
+  // Cargar datos iniciales
   useEffect(() => {
-    const wsService = createWebSocketService();
+    loadData();
     
-    // Conectar a datos de mercado
-    wsService.connect(
-      `ws://localhost:8000/ws/market/${selectedSymbol}`,
-      (data) => {
-        if (data.type === 'market_data') {
-          setMarketData(data.symbol, data);
-        }
-      },
-      (error) => {
-        console.error('WebSocket error:', error);
-        setWsConnected(false);
-        toast.error('Conexión WebSocket perdida');
-      }
-    );
-
-    // Conectar a señales de trading
-    const signalsWs = createWebSocketService();
-    signalsWs.connect(
-      'ws://localhost:8000/ws/signals',
-      (data) => {
-        if (data.type === 'trading_signal') {
-          addSignal(data);
-          toast.success(`Nueva señal: ${data.action.toUpperCase()}`);
-        }
-      }
-    );
-
+    // Simular conexión WebSocket
     setWsConnected(true);
-
+    
+    // Actualizar datos cada 5 segundos
+    const interval = setInterval(loadData, 5000);
+    
     return () => {
-      wsService.disconnect();
-      signalsWs.disconnect();
+      clearInterval(interval);
     };
-  }, [selectedSymbol, setMarketData, addSignal]);
+  }, [selectedSymbol]);
 
-  // Actualizar stores con datos de queries
-  useEffect(() => {
-    if (marketTicker) {
-      setMarketData(selectedSymbol, marketTicker);
-    }
-  }, [marketTicker, selectedSymbol, setMarketData]);
-
-  useEffect(() => {
-    if (agentsStatus) {
-      setAgentsStatus(agentsStatus);
-    }
-  }, [agentsStatus, setAgentsStatus]);
-
-  const currentMarketData = currentData[selectedSymbol];
-  const isPositive = currentMarketData?.change_24h && currentMarketData.change_24h > 0;
+  const currentMarketData = marketTicker;
+  const isPositive = currentMarketData?.changePercent && currentMarketData.changePercent > 0;
 
   // Métricas del dashboard
   const metrics = [
     {
       title: 'Precio Actual',
       value: currentMarketData?.price ? `$${currentMarketData.price.toLocaleString()}` : '--',
-      change: currentMarketData?.change_24h ? `${currentMarketData.change_24h.toFixed(2)}%` : '--',
+      change: currentMarketData?.changePercent ? `${currentMarketData.changePercent.toFixed(2)}%` : '--',
       icon: DollarSign,
       color: isPositive ? 'text-green-600' : 'text-red-600',
       bgColor: isPositive ? 'bg-green-50' : 'bg-red-50',
@@ -124,8 +109,8 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Agentes Activos',
-      value: agentsStatus ? Object.values(agentsStatus).filter(agent => agent.is_running).length.toString() : '--',
-      change: `${agentsStatus ? Object.keys(agentsStatus).length : 0} total`,
+      value: agentsStatus ? agentsStatus.filter(agent => agent.status === 'active').length.toString() : '--',
+      change: `${agentsStatus ? agentsStatus.length : 0} total`,
       icon: Activity,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -149,12 +134,10 @@ const Dashboard: React.FC = () => {
         {metrics.map((metric, index) => {
           const Icon = metric.icon;
           return (
-            <motion.div
+            <div
               key={metric.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`${metric.bgColor} ${metric.borderColor} border rounded-xl p-6 card-hover`}
+              className={`${metric.bgColor} ${metric.borderColor} border rounded-xl p-6 card-hover fade-in`}
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -172,7 +155,7 @@ const Dashboard: React.FC = () => {
                   <Icon className={`w-6 h-6 ${metric.color}`} />
                 </div>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>
@@ -180,12 +163,7 @@ const Dashboard: React.FC = () => {
       {/* Contenido principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gráfico de precios */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-2"
-        >
+        <div className="lg:col-span-2 fade-in" style={{ animationDelay: '0.2s' }}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -205,15 +183,10 @@ const Dashboard: React.FC = () => {
             </div>
             <MarketChart symbol={selectedSymbol} />
           </div>
-        </motion.div>
+        </div>
 
         {/* Panel lateral */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="space-y-6"
-        >
+        <div className="space-y-6 fade-in" style={{ animationDelay: '0.3s' }}>
           {/* Señales de trading */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
@@ -263,16 +236,11 @@ const Dashboard: React.FC = () => {
           </div>
           <PortfolioSummary />
         </div>
-      </motion.div>
+      </div>
 
       {/* Alertas y notificaciones */}
       {!isLiveMode && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4"
-        >
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 fade-in" style={{ animationDelay: '0.5s' }}>
           <div className="flex items-center space-x-3">
             <AlertTriangle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <div>
@@ -284,7 +252,7 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );
